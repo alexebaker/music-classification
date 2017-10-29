@@ -48,7 +48,7 @@ deactivate
 
 ## Details
 
-Details about this project can be found on [Kaggle](https://inclass.kaggle.com/c/cs529-project2)
+Details about this project can be found on [Kaggle](https://inclass.kaggle.com/c/cs529-project3)
 
 
 ## Usage

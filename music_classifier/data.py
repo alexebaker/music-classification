@@ -78,6 +78,12 @@ def get_mfcc_features(audio_data):
     ceps, _, _ = mfcc(audio_data[0, :-1])
     print(ceps)
     print(ceps.shape)
+
+    num_ceps = len(ceps)
+
+    tmp = np.mean(ceps, axis=0)
+    print(tmp)
+    print(tmp.shape)
     return ceps
 
 

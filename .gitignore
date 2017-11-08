@@ -1,6 +1,8 @@
 #Custom
 *classification*.csv
-*.npz
+*.zip
+genres/
+rename/
 
 
 # General

@@ -13,7 +13,7 @@ def main():
 
     audio_data = data.read_music_files()
     fft_features = data.get_fft_features(audio_data)
-    #mfcc_features = data.get_mfcc_features(audio_data)
+    mfcc_features = data.get_mfcc_features(audio_data)
     return
 
 

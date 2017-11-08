@@ -74,12 +74,15 @@ def get_fft_features(audio_data):
 def get_mfcc_features(audio_data):
     """Get the MFCC features from the data set
     """
-    ceps, _, _ = mfcc(audio_data)
+    audio_data[audio_data == 0] = 1
+    ceps, _, _ = mfcc(audio_data[0, :-1])
+    print(ceps)
+    print(ceps.shape)
     return ceps
 
 
 def get_custrom_features():
-    """Get the MFCC features from the data set
+    """Get custom features from the data set
     """
     return
 

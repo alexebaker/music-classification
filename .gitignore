@@ -1,6 +1,7 @@
 #Custom
 *classification*.csv
 *.zip
+*.npy
 genres/
 rename/
 

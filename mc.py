@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from music_classifier import cli
 from music_classifier import data
-from music_classifier import classifiers
+#from music_classifier import classifiers
 
 
 def main():

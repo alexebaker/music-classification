@@ -11,31 +11,84 @@ def main():
     # Parse the command line arguments
     cli_args = cli.parse_args()
 
-    audio_data = data.read_music_files()
-    file_data = audio_data[:, :-1]
-    labels = audio_data[:, -1]
-    fft_features = data.get_fft_features(file_data)
-    #mfcc_features = data.get_mfcc_features(file_data)
-
-    fft_lr = classifiers.log_reg_train(fft_features, labels)
-    #mfcc_lr = classifiers.log_reg_train(mfcc_features, labels)
-    #fft_knn = classifiers.knn_train(fft_features, labels)
-    #mfcc_knn = classifiers.knn_train(mfcc_features, labels)
+    audio_data, labels = data.read_music_files()
+    #audio_data = classifiers.data_normalize(audio_data)
 
     validation_data, validation_mapping = data.read_validation_files()
+    #validation_data = classifiers.data_normalize(validation_data)
 
-    fft_validation_features = data.get_fft_features(validation_data)
-    #mfcc_validation_features = data.get_mfcc_features(validation_data)
+    runall = cli_args['all']
+    if runall or cli_args['fft']:
+        features = data.get_fft_features(audio_data)
+        validation_features = data.get_fft_features(validation_data)
 
-    fft_lr_classification = classifiers.log_reg_classify(fft_lr, fft_validation_features)
-    #mfcc_lr_classification = classifiers.log_reg_classify(mfcc_lr, mfcc_validation_features)
-    #fft_knn_classification = classifiers.knn_classify(fft_knn, fft_validation_features)
-    #mfcc_knn_classification = classifiers.knn_classify(mfcc_knn, mfcc_validation_features)
+        if runall or cli_args['lr']:
+            classifier = classifiers.log_reg_train(features, labels)
+            classification = classifiers.log_reg_classify(
+                classifier,
+                validation_features)
+            data.save_classification(
+                classification,
+                "./fft_lr_classification.csv",
+                validation_mapping)
 
-    data.save_classification(fft_lr_classification, "./fft_lr_classification.csv", validation_mapping)
-    #data.save_classification(mfcc_lr_classification, "./mfcc_lr_classification.csv", validation_mapping)
-    #data.save_classification(fft_knn_classification, "./fft_knn_classification.csv", validation_mapping)
-    #data.save_classification(mfcc_knn_classification, "./mfcc_knn_classification.csv", validation_mapping)
+        if runall or cli_args['knn']:
+            classifier = classifiers.knn_train(features, labels)
+            classification = classifiers.knn_classify(
+                classifier,
+                validation_features)
+            data.save_classification(
+                classification,
+                "./fft_knn_classification.csv",
+                validation_mapping)
+
+    if runall or cli_args['mfcc']:
+        features = data.get_mfcc_features(audio_data)
+        validation_features = data.get_mfcc_features(validation_data)
+
+        if runall or cli_args['lr']:
+            classifier = classifiers.log_reg_train(features, labels)
+            classification = classifiers.log_reg_classify(
+                classifier,
+                validation_features)
+            data.save_classification(
+                classification,
+                "./mfcc_lr_classification.csv",
+                validation_mapping)
+
+        if runall or cli_args['knn']:
+            classifier = classifiers.knn_train(features, labels)
+            classification = classifiers.knn_classify(
+                classifier,
+                validation_features)
+            data.save_classification(
+                classification,
+                "./mfcc_knn_classification.csv",
+                validation_mapping)
+
+    if False and runall or cli_args['custom']:
+        features = data.get_custom_features(audio_data)
+        validation_features = data.get_custom_features(validation_data)
+
+        if runall or cli_args['lr']:
+            classifier = classifiers.log_reg_train(features, labels)
+            classification = classifiers.log_reg_classify(
+                classifier,
+                validation_features)
+            data.save_classification(
+                classification,
+                "./mfcc_lr_classification.csv",
+                validation_mapping)
+
+        if runall or cli_args['knn']:
+            classifier = classifiers.knn_train(features, labels)
+            classification = classifiers.knn_classify(
+                classifier,
+                validation_features)
+            data.save_classification(
+                classification,
+                "./mfcc_knn_classification.csv",
+                validation_mapping)
     return
 
 

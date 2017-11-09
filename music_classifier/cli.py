@@ -5,6 +5,8 @@ from __future__ import division
 
 import argparse
 
+from music_classifier import data
+
 
 def parse_args():
     """Parse CLI arguments.
@@ -18,22 +20,46 @@ def parse_args():
         description='Classifies the testing data using naive bayes and the training data.')
 
     # Add arguments to the parser
-    #parser.add_argument(
-    #    '--training-data',
-    #    type=argparse.FileType(mode='r'),
-    #    default='./data/training.csv',
-    #    help='Path to the training data file.')
+    parser.add_argument(
+        '--training-data',
+        type=str,
+        default=data.genre_dir,
+        help='Path to the training data folder.')
 
-    #parser.add_argument(
-    #    '--testing-data',
-    #    type=argparse.FileType(mode='r'),
-    #    default='./data/testing.csv',
-    #    help='Path to the test data file.')
+    parser.add_argument(
+        '--validation-data',
+        type=str,
+        default=data.validation_dir,
+        help='Path to the validation data folder.')
 
-    #parser.add_argument(
-    #    '--classification-file',
-    #    type=argparse.FileType(mode='w'),
-    #    default='./classification.csv',
-    #    help='Path to the classification file to write the results of the testing data.')
+    parser.add_argument(
+        '--fft',
+        action='store_true',
+        help='Path to the validation data folder.')
+
+    parser.add_argument(
+        '--mfcc',
+        action='store_true',
+        help='Path to the validation data folder.')
+
+    parser.add_argument(
+        '--custom',
+        action='store_true',
+        help='Path to the validation data folder.')
+
+    parser.add_argument(
+        '--lr',
+        action='store_true',
+        help='Path to the validation data folder.')
+
+    parser.add_argument(
+        '--knn',
+        action='store_true',
+        help='Path to the validation data folder.')
+
+    parser.add_argument(
+        '--all',
+        action='store_true',
+        help='Path to the validation data folder.')
 
     return vars(parser.parse_args())

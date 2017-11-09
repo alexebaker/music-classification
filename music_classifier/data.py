@@ -48,7 +48,7 @@ def read_music_files(folder=genre_dir, data_file=audio_data_file):
         audio_data = np.load(data_file)
     else:
         file_count = 0
-        audio_data = np.zeros((total_files, min_audio_len+1), dtype=np.float64)
+        audio_data = np.zeros((total_files, min_audio_len), dtype=np.float64)
         for root, dirs, files in os.walk(folder):
             for f in files:
                 if f.endswith('.au'):
@@ -62,7 +62,7 @@ def read_music_files(folder=genre_dir, data_file=audio_data_file):
 
                     file_count += 1
         np.save(data_file, audio_data)
-    return audio_data
+    return audio_data[:, :-1], audio_data[:, -1]
 
 
 def read_validation_files(folder=validation_dir, data_file=validation_data_file, mapping_file=mapping_file):
@@ -111,13 +111,13 @@ def get_mfcc_features(audio_data):
     ceps_features = np.zeros((audio_data.shape[0], num_ceps), dtype=np.float64)
 
     for row in range(audio_data.shape[0]):
-        #ceps, _, _ = mfcc(audio_data, fs=22050)
-        ceps, _, _ = mfcc(audio_data)
+        #ceps, _, _ = mfcc(audio_data[row, :], fs=22050)
+        ceps, _, _ = mfcc(audio_data[row, :])
         ceps_features[row, :] = np.mean(ceps[int(num_ceps / 10):int(num_ceps * 9 / 10)], axis=0)
     return ceps_features
 
 
-def get_custrom_features():
+def get_custom_features():
     """Get custom features from the data set
     """
     return

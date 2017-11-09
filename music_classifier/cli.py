@@ -58,6 +58,11 @@ def parse_args():
         help='Path to the validation data folder.')
 
     parser.add_argument(
+        '--svm',
+        action='store_true',
+        help='Path to the validation data folder.')
+
+    parser.add_argument(
         '--all',
         action='store_true',
         help='Path to the validation data folder.')

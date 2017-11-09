@@ -25,7 +25,7 @@ validation_files = 100
 min_validation_len = 661504
 max_audio_len = 675808
 min_audio_len = 66000
-fft_feature_range = (0, 1000)
+fft_feature_range = (0, 1000, 1)
 
 
 genre_mapping = {
@@ -97,9 +97,11 @@ def get_fft_features(audio_data):
     """
     start = fft_feature_range[0]
     end = fft_feature_range[1]
+    step = fft_feature_range[2]
+
     fft_features = np.zeros((audio_data.shape[0], end-start), dtype=np.float64)
 
-    fft_features = np.abs(scipy.fftpack.fft(audio_data, axis=1))[:, start:end]
+    fft_features = np.abs(scipy.fftpack.fft(audio_data, axis=1))[:, start:end:step]
     return fft_features
 
 

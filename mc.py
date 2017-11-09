@@ -42,6 +42,16 @@ def main():
                 "./fft_knn_classification.csv",
                 validation_mapping)
 
+        if runall or cli_args['svm']:
+            classifier = classifiers.svm_train(features, labels)
+            classification = classifiers.svm_classify(
+                classifier,
+                validation_features)
+            data.save_classification(
+                classification,
+                "./fft_svm_classification.csv",
+                validation_mapping)
+
     if runall or cli_args['mfcc']:
         features = data.get_mfcc_features(audio_data)
         validation_features = data.get_mfcc_features(validation_data)
@@ -66,6 +76,16 @@ def main():
                 "./mfcc_knn_classification.csv",
                 validation_mapping)
 
+        if runall or cli_args['svm']:
+            classifier = classifiers.svm_train(features, labels)
+            classification = classifiers.svm_classify(
+                classifier,
+                validation_features)
+            data.save_classification(
+                classification,
+                "./mfcc_svm_classification.csv",
+                validation_mapping)
+
     if False and runall or cli_args['custom']:
         features = data.get_custom_features(audio_data)
         validation_features = data.get_custom_features(validation_data)
@@ -77,7 +97,7 @@ def main():
                 validation_features)
             data.save_classification(
                 classification,
-                "./mfcc_lr_classification.csv",
+                "./custom_lr_classification.csv",
                 validation_mapping)
 
         if runall or cli_args['knn']:
@@ -87,7 +107,17 @@ def main():
                 validation_features)
             data.save_classification(
                 classification,
-                "./mfcc_knn_classification.csv",
+                "./custom_knn_classification.csv",
+                validation_mapping)
+
+        if runall or cli_args['svm']:
+            classifier = classifiers.svm_train(features, labels)
+            classification = classifiers.svm_classify(
+                classifier,
+                validation_features)
+            data.save_classification(
+                classification,
+                "./custom_svm_classification.csv",
                 validation_mapping)
     return
 

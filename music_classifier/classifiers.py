@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn import svm
 
 
 def cross_validate_log_reg(data, target):
@@ -43,6 +44,19 @@ def knn_classify(knn, data):
     test_data = data_normalize(data)
 
     return knn.predict(test_data)
+
+def svm_train(data, target):
+    train_data = data_normalize(data)
+
+    svm_new = svm.SVC()
+    svm_new.fit(train_data, target)
+    return svm_new
+
+
+def svm_classify(svm_new, data):
+    test_data = data_normalize(data)
+
+    return svm_new.predict(test_data)
 
 
 def data_normalize(data):

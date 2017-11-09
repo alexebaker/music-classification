@@ -4,6 +4,7 @@
 *.npy
 genres/
 rename/
+*.json
 
 
 # General

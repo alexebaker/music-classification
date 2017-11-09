@@ -5,6 +5,7 @@ from __future__ import division
 import os
 import sys
 import scipy
+import json
 import soundfile as sf
 import numpy as np
 
@@ -14,9 +15,14 @@ from music_classifier import BASE_DIR
 
 
 genre_dir = os.path.join(BASE_DIR, 'data', 'genres')
+validation_dir = os.path.join(BASE_DIR, 'data', 'rename')
 audio_data_file = os.path.join(BASE_DIR, 'data', 'audio_data.npy')
+validation_data_file = os.path.join(BASE_DIR, 'data', 'validation_data.npy')
+mapping_file = os.path.join(BASE_DIR, 'data', 'validation_mapping.json')
 
 total_files = 900
+validation_files = 100
+min_validation_len = 661504
 max_audio_len = 675808
 min_audio_len = 66000
 fft_feature_range = (0, 1000)
@@ -59,15 +65,41 @@ def read_music_files(folder=genre_dir, data_file=audio_data_file):
     return audio_data
 
 
+def read_validation_files(folder=validation_dir, data_file=validation_data_file, mapping_file=mapping_file):
+    """Reads the validation music files.
+    """
+    if os.path.exists(data_file) and os.path.exists(mapping_file):
+        validation_data = np.load(data_file)
+        with open(mapping_file, 'r') as f:
+            validation_mapping = json.load(f)
+    else:
+        file_count = 0
+        validation_mapping = {}
+        validation_data = np.zeros((validation_files, min_validation_len), dtype=np.float64)
+        for root, dirs, files in os.walk(folder):
+            for f in files:
+                if f.endswith('.au'):
+                    aufile = os.path.join(root, f)
+                    data, samplerate = sf.read(aufile)
+
+                    validation_data[file_count, :min_validation_len] = data[:min_validation_len]
+                    validation_mapping[str(file_count)] = f
+
+                    file_count += 1
+        np.save(data_file, validation_data)
+        with open(mapping_file, 'w') as f:
+            json.dump(validation_mapping, f)
+    return validation_data, validation_mapping
+
+
 def get_fft_features(audio_data):
     """Get the FFT features from the data set
     """
     start = fft_feature_range[0]
     end = fft_feature_range[1]
-    fft_features = np.zeros((audio_data.shape[0], end-start+1), dtype=np.float64)
+    fft_features = np.zeros((audio_data.shape[0], end-start), dtype=np.float64)
 
-    fft_features[:, :-1] = np.abs(scipy.fftpack.fft(audio_data[:, :-1], axis=1))[:, start:end]
-    fft_features[:, -1] = audio_data[:, -1]
+    fft_features = np.abs(scipy.fftpack.fft(audio_data, axis=1))[:, start:end]
     return fft_features
 
 
@@ -75,16 +107,14 @@ def get_mfcc_features(audio_data):
     """Get the MFCC features from the data set
     """
     audio_data[audio_data == 0] = 1
-    ceps, _, _ = mfcc(audio_data[0, :-1])
-    print(ceps)
-    print(ceps.shape)
+    num_ceps = 13
+    ceps_features = np.zeros((audio_data.shape[0], num_ceps), dtype=np.float64)
 
-    num_ceps = len(ceps)
-
-    tmp = np.mean(ceps, axis=0)
-    print(tmp)
-    print(tmp.shape)
-    return ceps
+    for row in range(audio_data.shape[0]):
+        #ceps, _, _ = mfcc(audio_data, fs=22050)
+        ceps, _, _ = mfcc(audio_data)
+        ceps_features[row, :] = np.mean(ceps[int(num_ceps / 10):int(num_ceps * 9 / 10)], axis=0)
+    return ceps_features
 
 
 def get_custrom_features():
@@ -93,7 +123,7 @@ def get_custrom_features():
     return
 
 
-def save_classification(classification, classification_file):
+def save_classification(classification, classification_file, validation_mapping):
     """Saves the classification from the classification algorithm.
 
     :type classification: list
@@ -102,9 +132,11 @@ def save_classification(classification, classification_file):
     :type classification_file: File Object
     :param classification_file: File to write the classification to.
     """
-    print("id,class", file=classification_file)
-    for row in classification:
-        print("%d,%d" % (row[0], row[1]), file=classification_file)
+    with open(classification_file, 'w') as f:
+        print("id,class", file=f)
+        for idx, label in enumerate(classification):
+            print("%s,%s" % (validation_mapping[str(idx)], _id_2_genre(label)),
+                  file=f)
     return
 
 

@@ -8,6 +8,7 @@ import scipy
 import json
 import soundfile as sf
 import numpy as np
+import pywt
 
 from scikits.talkbox.features import mfcc
 
@@ -137,10 +138,22 @@ def get_mfcc_features(audio_data, npy_file):
     return ceps_features
 
 
-def get_custom_features():
-    """Get custom features from the data set
+def get_dwt_features(audio_data, npy_file):
+    """Get dwt features from the data set
     """
-    return
+    audio_data[audio_data == 0] = 1
+
+    if os.path.exists(npy_file):
+        dwt_features = np.load(npy_file)
+    else:
+        dwt_features =np.zeros((audio_data.shape[0], max_audio_len+1), dtype=np.float64)
+        for row in range(audio_data.shape[0]):
+            data_len = int(audio_data[row, 0])
+            cA, cD = pywt.dwt(audio_data[row, 1:data_len], 'db2')
+            dwt_features[row, :] = pywt.idwt(cA, cD, 'db2')
+        np.save(npy_file, dwt_features)
+    return dwt_features
+
 
 
 def save_classification(classification, classification_file, validation_mapping):

@@ -23,9 +23,10 @@ mapping_file = os.path.join(BASE_DIR, 'data', 'validation_mapping.json')
 total_files = 900
 validation_files = 100
 min_validation_len = 661504
+max_validation_len = 661794
 max_audio_len = 675808
-min_audio_len = 66000
-fft_feature_range = (0, 1000, 1)
+min_audio_len = 660000
+fft_feature_range = (int(min_audio_len / 10), int(min_audio_len * 9 / 10), 15)
 
 
 genre_mapping = {
@@ -48,14 +49,16 @@ def read_music_files(folder=genre_dir, data_file=audio_data_file):
         audio_data = np.load(data_file)
     else:
         file_count = 0
-        audio_data = np.zeros((total_files, min_audio_len), dtype=np.float64)
+        audio_data = np.zeros((total_files, max_audio_len+2), dtype=np.float64)
         for root, dirs, files in os.walk(folder):
             for f in files:
                 if f.endswith('.au'):
                     aufile = os.path.join(root, f)
                     data, samplerate = sf.read(aufile)
+                    data_len = len(data) + 1
 
-                    audio_data[file_count, :min_audio_len] = data[:min_audio_len]
+                    audio_data[file_count, 0] = data_len
+                    audio_data[file_count, 1:data_len] = data
 
                     genre = os.path.basename(os.path.normpath(root))
                     audio_data[file_count, -1] = _genre_2_id(genre)
@@ -75,14 +78,16 @@ def read_validation_files(folder=validation_dir, data_file=validation_data_file,
     else:
         file_count = 0
         validation_mapping = {}
-        validation_data = np.zeros((validation_files, min_validation_len), dtype=np.float64)
+        validation_data = np.zeros((validation_files, max_validation_len+1), dtype=np.float64)
         for root, dirs, files in os.walk(folder):
             for f in files:
                 if f.endswith('.au'):
                     aufile = os.path.join(root, f)
                     data, samplerate = sf.read(aufile)
+                    data_len = len(data) + 1
 
-                    validation_data[file_count, :min_validation_len] = data[:min_validation_len]
+                    validation_data[file_count, 0] = data_len
+                    validation_data[file_count, 1:data_len] = data
                     validation_mapping[str(file_count)] = f
 
                     file_count += 1
@@ -99,9 +104,10 @@ def get_fft_features(audio_data):
     end = fft_feature_range[1]
     step = fft_feature_range[2]
 
-    fft_features = np.zeros((audio_data.shape[0], end-start), dtype=np.float64)
+    fft_features = np.zeros((audio_data.shape[0], int((end-start)/step)), dtype=np.float64)
 
-    fft_features = np.abs(scipy.fftpack.fft(audio_data, axis=1))[:, start:end:step]
+    for row in range(audio_data.shape[0]):
+        fft_features[row, :] = np.abs(scipy.fftpack.fft(audio_data[row, 1:int(audio_data[row, 0])]))[start:end:step]
     return fft_features
 
 
@@ -114,7 +120,7 @@ def get_mfcc_features(audio_data):
 
     for row in range(audio_data.shape[0]):
         #ceps, _, _ = mfcc(audio_data[row, :], fs=22050)
-        ceps, _, _ = mfcc(audio_data[row, :])
+        ceps, _, _ = mfcc(audio_data[row, 1:int(audio_data[row, 0])])
         ceps_features[row, :] = np.mean(ceps[int(num_ceps / 10):int(num_ceps * 9 / 10)], axis=0)
     return ceps_features
 

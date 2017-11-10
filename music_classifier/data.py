@@ -26,7 +26,7 @@ min_validation_len = 661504
 max_validation_len = 661794
 max_audio_len = 675808
 min_audio_len = 660000
-fft_feature_range = (int(min_audio_len / 10), int(min_audio_len * 9 / 10), 15)
+fft_feature_range = (int(min_audio_len / 10), int(min_audio_len * 9 / 10), 20)
 
 
 genre_mapping = {
@@ -97,31 +97,43 @@ def read_validation_files(folder=validation_dir, data_file=validation_data_file,
     return validation_data, validation_mapping
 
 
-def get_fft_features(audio_data):
+def get_fft_features(audio_data, npy_file, fft_feature_range=fft_feature_range):
     """Get the FFT features from the data set
     """
-    start = fft_feature_range[0]
-    end = fft_feature_range[1]
+    start = fft_feature_range[0] + 1
+    end = fft_feature_range[1] + 1
     step = fft_feature_range[2]
 
-    fft_features = np.zeros((audio_data.shape[0], int((end-start)/step)), dtype=np.float64)
+    if os.path.exists(npy_file):
+        fft_features = np.load(npy_file)
+    else:
+        fft_features = np.zeros((audio_data.shape[0], max_audio_len+1), dtype=np.float64)
 
-    for row in range(audio_data.shape[0]):
-        fft_features[row, :] = np.abs(scipy.fftpack.fft(audio_data[row, 1:int(audio_data[row, 0])]))[start:end:step]
-    return fft_features
+        for row in range(audio_data.shape[0]):
+            data_len = int(audio_data[row, 0])
+            fft_features[row, 1:data_len] = np.abs(scipy.fftpack.fft(audio_data[row, 1:data_len]))
+            fft_features[row, 0] = data_len
+        np.save(npy_file, fft_features)
+    return fft_features[:, start:end:step]
 
 
-def get_mfcc_features(audio_data):
+def get_mfcc_features(audio_data, npy_file):
     """Get the MFCC features from the data set
     """
     audio_data[audio_data == 0] = 1
-    num_ceps = 13
-    ceps_features = np.zeros((audio_data.shape[0], num_ceps), dtype=np.float64)
 
-    for row in range(audio_data.shape[0]):
-        #ceps, _, _ = mfcc(audio_data[row, :], fs=22050)
-        ceps, _, _ = mfcc(audio_data[row, 1:int(audio_data[row, 0])])
-        ceps_features[row, :] = np.mean(ceps[int(num_ceps / 10):int(num_ceps * 9 / 10)], axis=0)
+    if os.path.exists(npy_file):
+        ceps_features = np.load(npy_file)
+    else:
+        ceps_features = np.zeros((audio_data.shape[0], 13), dtype=np.float64)
+
+        for row in range(audio_data.shape[0]):
+            #ceps, _, _ = mfcc(audio_data[row, :], fs=22050)
+            data_len = int(audio_data[row, 0])
+            ceps, _, _ = mfcc(audio_data[row, 1:data_len])
+            num_ceps = ceps.shape[0]
+            ceps_features[row, :] = np.mean(ceps[int(num_ceps / 10):int(num_ceps * 9 / 10), :], axis=0)
+        np.save(npy_file, ceps_features)
     return ceps_features
 
 

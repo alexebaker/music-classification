@@ -60,7 +60,6 @@ def svm_classify(svm_new, data):
 
 
 def data_normalize(data):
-    #sc = StandardScaler()
-    norm=Normalizer()
-    norm.fit(data.T)
-    return norm.transform(data.T).T
+    norm = StandardScaler()
+    #norm = Normalizer()
+    return norm.fit_transform(data)

@@ -3,7 +3,7 @@ all: docs
 .PHONY: clean
 clean:
 	find . -name "*.pyc" -delete
-	find . -name "*.npz" -delete
+	find . -name "*.npy" -delete
 
 .PHONY: docs
 docs:

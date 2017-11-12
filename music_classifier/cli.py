@@ -43,7 +43,7 @@ def parse_args():
         help='Path to the validation data folder.')
 
     parser.add_argument(
-        '--custom',
+        '--dwt',
         action='store_true',
         help='Path to the validation data folder.')
 

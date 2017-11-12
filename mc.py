@@ -11,8 +11,10 @@ from music_classifier import BASE_DIR
 
 fft_file = os.path.join(BASE_DIR, 'data', 'fft_features.npy')
 mfcc_file = os.path.join(BASE_DIR, 'data', 'mfcc_features.npy')
+dwt_file = os.path.join(BASE_DIR, 'data', 'dwt_features.npy')
 fft_validation_file = os.path.join(BASE_DIR, 'data', 'fft_validation_features.npy')
 mfcc_validation_file = os.path.join(BASE_DIR, 'data', 'mfcc_validation_features.npy')
+dwt_validation_file = os.path.join(BASE_DIR, 'data', 'dwt_validation_features.npy')
 
 
 def main():
@@ -95,9 +97,9 @@ def main():
                 "./mfcc_svm_classification.csv",
                 validation_mapping)
 
-    if False and runall or cli_args['custom']:
-        features = data.get_custom_features(audio_data)
-        validation_features = data.get_custom_features(validation_data)
+    if runall or cli_args['dwt']:
+        features = data.get_dwt_features(audio_data, dwt_file)
+        validation_features = data.get_dwt_features(validation_data, dwt_validation_file)
 
         if runall or cli_args['lr']:
             classifier = classifiers.log_reg_train(features, labels)
@@ -106,7 +108,7 @@ def main():
                 validation_features)
             data.save_classification(
                 classification,
-                "./custom_lr_classification.csv",
+                "./dwt_lr_classification.csv",
                 validation_mapping)
 
         if runall or cli_args['knn']:
@@ -116,7 +118,7 @@ def main():
                 validation_features)
             data.save_classification(
                 classification,
-                "./custom_knn_classification.csv",
+                "./dwt_knn_classification.csv",
                 validation_mapping)
 
         if runall or cli_args['svm']:
@@ -126,7 +128,7 @@ def main():
                 validation_features)
             data.save_classification(
                 classification,
-                "./custom_svm_classification.csv",
+                "./dwt_svm_classification.csv",
                 validation_mapping)
     return
 

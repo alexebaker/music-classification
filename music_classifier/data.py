@@ -29,6 +29,7 @@ min_validation_len = 661504
 max_validation_len = 661794
 max_audio_len = 675808
 min_audio_len = 660000
+fs = 22050
 feature_range = (int(min_audio_len / 10), int(min_audio_len * 9 / 10), 20)
 
 
@@ -148,7 +149,7 @@ def get_fft_features(audio_data, npy_file):
             fft_features[row, 1:data_len] = np.abs(scipy.fftpack.fft(audio_data[row, 1:data_len]))
             fft_features[row, 0] = data_len
         np.save(npy_file, fft_features)
-    return fft_features[:, start:end:step]
+    return normalize_data(fft_features[:, start:end:step])
 
 
 def get_mfcc_features(audio_data, npy_file):
@@ -163,7 +164,7 @@ def get_mfcc_features(audio_data, npy_file):
 
         for row in range(audio_data.shape[0]):
             data_len = int(audio_data[row, 0])
-            ceps, _, _ = mfcc(audio_data[row, 1:data_len])
+            ceps, _, _ = mfcc(audio_data[row, 1:data_len], fs=fs)
             num_ceps = ceps.shape[0]
             ceps_features[row, :] = np.mean(ceps[int(num_ceps / 10):int(num_ceps * 9 / 10)], axis=0)
         np.save(npy_file, ceps_features)
@@ -188,7 +189,7 @@ def get_dwt_features(audio_data, npy_file):
             dwt_features[row, 1:data_len] = pywt.idwt(cA, cD, 'db2')
             dwt_features[row, 0] = data_len
         np.save(npy_file, dwt_features)
-    return dwt_features[:, start:end:step]
+    return normalize_data(dwt_features[:, start:end:step])
 
 
 def normalize_data(data):

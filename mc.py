@@ -50,8 +50,8 @@ def main():
             if validation_data is None:
                 validation_data, validaion_mapping = data.read_validation_files(cli_args['validation_data'])
 
-        feature_data = data.normalize_data(data.get_features(feature, audio_data, feature_file))
-        feature_validation_data = data.normalize_data(data.get_features(feature, validation_data, feature_validation_file))
+        feature_data = data.get_features(feature, audio_data, feature_file)
+        feature_validation_data = data.get_features(feature, validation_data, feature_validation_file)
 
         for method in methods:
             classifier = classifiers.train_data(method, feature_data, labels)

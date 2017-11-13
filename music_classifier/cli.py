@@ -49,4 +49,14 @@ def parse_args():
         action='store_true',
         help='Run all features and classifiers.')
 
+    parser.add_argument(
+        '--cross-validate',
+        action='store_true',
+        help='Perform 10 fold cross validation.')
+
+    parser.add_argument(
+        '--confusion-matrix',
+        action='store_true',
+        help='Calculate the confusion matrix for the given methods.')
+
     return vars(parser.parse_args())

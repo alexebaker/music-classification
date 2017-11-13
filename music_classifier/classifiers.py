@@ -3,7 +3,8 @@ from __future__ import unicode_literals
 from __future__ import division
 
 # for cross validation
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_validate
+from sklearn.metrics import confusion_matrix
 
 # for normalization
 from sklearn.linear_model import LogisticRegression
@@ -12,12 +13,19 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 
 
-def get_cross_validate_sets(data, target):
-    train_test_split(data, target, test_size=.1)
-    return
-
-
 def train_data(method, data, target):
+    classifier = get_classifier(method)
+
+    if classifier:
+        classifier.fit(data, target)
+    return classifier
+
+
+def classify_data(classifier, data):
+    return classifier.predict(data)
+
+
+def get_classifier(method):
     classifier = None
 
     if method == 'lr':
@@ -29,13 +37,24 @@ def train_data(method, data, target):
     elif method == 'nn':
         classifier = MLPClassifier()
 
-    if classifier:
-        classifier.fit(data, target)
     return classifier
 
 
-def classify_data(classifier, data):
-    return classifier.predict(data)
+def perform_cross_validation(method, data, target):
+    classifier = get_classifier(method)
+    accuracy = cross_validate(classifier, data, target, cv=10, n_jobs=-1)
+    return accuracy['test_score']
 
 
+def get_confusion_matrix(method, data, target):
+    training_data, testing_data, labels, _ = train_test_split(
+        data,
+        target,
+        test_size=0.1,
+        train_size=0.9,
+        random_state=42)
 
+    classifier = train_data(method, training_data, labels)
+    classification = classify_data(classifier, testing_data)
+    confusion = confusion_matrix(target, classification)
+    return confusion

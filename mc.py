@@ -54,10 +54,23 @@ def main():
         feature_validation_data = data.get_features(feature, validation_data, feature_validation_file)
 
         for method in methods:
-            classifier = classifiers.train_data(method, feature_data, labels)
-            classification = classifiers.classify_data(classifier, feature_validation_data)
-            classification_file = "%s_%s_classification.csv" % (feature, method)
-            data.save_classification(classification, classification_file, validation_mapping)
+            if cli_args['cross_validate']:
+                accuracy = classifiers.perform_cross_validation(method, feature_data, labels)
+                print('10-Fold Cross-Validation Accuracy for %s %s:' % (feature, method))
+                print(accuracy)
+                print(np.mean(accuracy))
+                print('')
+            elif cli_args['confusion_matrix']:
+                confusion_matrix = classifiers.get_confusion_matrix
+                print('Confusion matrix for %s %s:' % (feature, method))
+                print(confusion_matrix)
+                confusion_matrix_file = "%s_%s_confusion_matrix.npy" % (feature, method)
+                np.save(confusion_matrix_file, confusion_matrix)
+            else:
+                classifier = classifiers.train_data(method, feature_data, labels)
+                classification = classifiers.classify_data(classifier, feature_validation_data)
+                classification_file = "%s_%s_classification.csv" % (feature, method)
+                data.save_classification(classification, classification_file, validation_mapping)
     return
 
 

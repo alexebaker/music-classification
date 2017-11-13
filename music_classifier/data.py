@@ -155,11 +155,10 @@ def get_fft_features(audio_data, npy_file):
 def get_mfcc_features(audio_data, npy_file):
     """Get the MFCC features from the data set
     """
-    audio_data[audio_data == 0] = 1
-
     if os.path.exists(npy_file):
         ceps_features = np.load(npy_file)
     else:
+        audio_data[audio_data == 0] = 1
         ceps_features = np.zeros((audio_data.shape[0], 13), dtype=np.float64)
 
         for row in range(audio_data.shape[0]):
@@ -174,7 +173,6 @@ def get_mfcc_features(audio_data, npy_file):
 def get_dwt_features(audio_data, npy_file):
     """Get dwt features from the data set
     """
-    audio_data[audio_data == 0] = 1
     start = feature_range[0] + 1
     end = feature_range[1] + 1
     step = feature_range[2]
@@ -182,6 +180,7 @@ def get_dwt_features(audio_data, npy_file):
     if os.path.exists(npy_file):
         dwt_features = np.load(npy_file)
     else:
+        audio_data[audio_data == 0] = 1
         dwt_features = np.zeros((audio_data.shape[0], max_audio_len+1), dtype=np.float64)
         for row in range(audio_data.shape[0]):
             data_len = int(audio_data[row, 0])

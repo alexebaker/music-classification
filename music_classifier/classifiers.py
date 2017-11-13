@@ -38,7 +38,9 @@ def get_classifier(method):
     elif method == 'knn':
         classifier = KNeighborsClassifier()
     elif method == 'svm':
-        classifier = svm.SVC()
+        classifier = svm.SVC(
+            kernel='poly',
+            C=0.1)
     elif method == 'nn':
         classifier = MLPClassifier()
 

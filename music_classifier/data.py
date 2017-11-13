@@ -174,23 +174,18 @@ def get_mfcc_features(audio_data, npy_file):
 def get_dwt_features(audio_data, npy_file):
     """Get dwt features from the data set
     """
-    start = int(feature_range[0] / 2) + 1
-    end = int(feature_range[1] / 2) + 1
-    step = int(math.ceil(feature_range[2] / 2))
-
     if os.path.exists(npy_file):
         dwt_features = np.load(npy_file)
     else:
-        audio_data[audio_data == 0] = 1
-        dwt_features = np.zeros((audio_data.shape[0], int(math.ceil(max_audio_len/2))+2), dtype=np.float64)
+        num_features = 10000
+        dwt_features = np.zeros((audio_data.shape[0], num_features), dtype=np.float64)
         for row in range(audio_data.shape[0]):
             data_len = int(audio_data[row, 0])
-            cA, cD = pywt.dwt(audio_data[row, 1:data_len], 'db2')
-            dwt_len = len(cA) + 1
-            dwt_features[row, 1:dwt_len] = cA
-            dwt_features[row, 0] = dwt_len
+            max_level = pywt.dwt_max_level(data_len, num_features)
+            coeffs = pywt.wavedec(audio_data[row, 1:data_len], 'db1', level=max_level)
+            dwt_features[row, :] = coeffs[0][:num_features]
         np.save(npy_file, dwt_features)
-    return normalize_data(dwt_features[:, start:end:step])
+    return dwt_features
 
 
 def normalize_data(data):

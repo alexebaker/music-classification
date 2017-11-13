@@ -31,10 +31,10 @@ def get_classifier(method):
     if method == 'lr':
         classifier = LogisticRegression(
             random_state=42,
-            solver='newton-cg',
-            penalty='l2',
-            multi_class='multinomial',
-            C=10)
+            #solver='newton-cg',
+            #penalty='l2',
+            #multi_class='multinomial',
+            C=1000)
     elif method == 'knn':
         classifier = KNeighborsClassifier()
     elif method == 'svm':

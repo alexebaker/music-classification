@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 from __future__ import division
 
 import os
-import sys
 import scipy
 import json
 import soundfile as sf
@@ -11,6 +10,8 @@ import numpy as np
 import pywt
 
 from scikits.talkbox.features import mfcc
+
+from sklearn.preprocessing import Normalizer
 
 from music_classifier import BASE_DIR
 
@@ -20,6 +21,7 @@ validation_dir = os.path.join(BASE_DIR, 'data', 'rename')
 audio_data_file = os.path.join(BASE_DIR, 'data', 'audio_data.npy')
 validation_data_file = os.path.join(BASE_DIR, 'data', 'validation_data.npy')
 mapping_file = os.path.join(BASE_DIR, 'data', 'validation_mapping.json')
+label_file = os.path.join(BASE_DIR, 'data', 'audio_labels.npy')
 
 total_files = 900
 validation_files = 100
@@ -43,14 +45,16 @@ genre_mapping = {
     'rock': 9}
 
 
-def read_music_files(folder=genre_dir, data_file=audio_data_file):
+def read_music_files(folder=genre_dir, data_file=audio_data_file, label_file=label_file):
     """Reads the music files.
     """
-    if os.path.exists(data_file):
+    if os.path.exists(data_file) and os.path.exists(label_file):
         audio_data = np.load(data_file)
+        labels = np.load(label_file)
     else:
         file_count = 0
-        audio_data = np.zeros((total_files, max_audio_len+2), dtype=np.float64)
+        audio_data = np.zeros((total_files, max_audio_len+1), dtype=np.float64)
+        labels = np.zeros((total_files,), dtype=np.int16)
         for root, dirs, files in os.walk(folder):
             for f in files:
                 if f.endswith('.au'):
@@ -62,11 +66,20 @@ def read_music_files(folder=genre_dir, data_file=audio_data_file):
                     audio_data[file_count, 1:data_len] = data
 
                     genre = os.path.basename(os.path.normpath(root))
-                    audio_data[file_count, -1] = _genre_2_id(genre)
+                    labels[file_count] = _genre_2_id(genre)
 
                     file_count += 1
         np.save(data_file, audio_data)
-    return audio_data[:, :-1], audio_data[:, -1]
+        np.save(label_file, labels)
+    return audio_data, labels
+
+
+def get_labels(label_file=label_file):
+    if os.path.exists(label_file):
+        labels = np.load(label_file)
+    else:
+        _, labels = read_music_files()
+    return labels
 
 
 def read_validation_files(folder=validation_dir, data_file=validation_data_file, mapping_file=mapping_file):
@@ -96,6 +109,26 @@ def read_validation_files(folder=validation_dir, data_file=validation_data_file,
         with open(mapping_file, 'w') as f:
             json.dump(validation_mapping, f)
     return validation_data, validation_mapping
+
+
+def get_mapping(mapping_file=mapping_file):
+    if os.path.exists(mapping_file):
+        with open(mapping_file, 'r') as f:
+            validation_mapping = json.load(f)
+    else:
+        _, validation_mapping = read_validation_files()
+    return validation_mapping
+
+
+def get_features(feature, audio_data, npy_file):
+    features = None
+    if feature == 'fft':
+        features = get_fft_features(audio_data, npy_file)
+    elif feature == 'mfcc':
+        features = get_mfcc_features(audio_data, npy_file)
+    elif feature == 'dwt':
+        features = get_dwt_features(audio_data, npy_file)
+    return features
 
 
 def get_fft_features(audio_data, npy_file):
@@ -129,11 +162,10 @@ def get_mfcc_features(audio_data, npy_file):
         ceps_features = np.zeros((audio_data.shape[0], 13), dtype=np.float64)
 
         for row in range(audio_data.shape[0]):
-            #ceps, _, _ = mfcc(audio_data[row, :], fs=22050)
             data_len = int(audio_data[row, 0])
             ceps, _, _ = mfcc(audio_data[row, 1:data_len])
             num_ceps = ceps.shape[0]
-            ceps_features[row, :] = np.mean(ceps[int(num_ceps / 10):int(num_ceps * 9 / 10), :], axis=0)
+            ceps_features[row, :] = np.mean(ceps[int(num_ceps / 10):int(num_ceps * 9 / 10)], axis=0)
         np.save(npy_file, ceps_features)
     return ceps_features
 
@@ -158,6 +190,10 @@ def get_dwt_features(audio_data, npy_file):
         np.save(npy_file, dwt_features)
     return dwt_features[:, start:end:step]
 
+
+def normalize_data(data):
+    norm = Normalizer()
+    return norm.fit_transform(data)
 
 
 def save_classification(classification, classification_file, validation_mapping):

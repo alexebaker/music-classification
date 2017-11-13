@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
+import numpy as np
 
 from music_classifier import cli
 from music_classifier import data
@@ -16,120 +17,47 @@ fft_validation_file = os.path.join(BASE_DIR, 'data', 'fft_validation_features.np
 mfcc_validation_file = os.path.join(BASE_DIR, 'data', 'mfcc_validation_features.npy')
 dwt_validation_file = os.path.join(BASE_DIR, 'data', 'dwt_validation_features.npy')
 
+data_dir = os.path.join(BASE_DIR, 'data')
+
 
 def main():
     """Main entry point."""
     # Parse the command line arguments
     cli_args = cli.parse_args()
 
-    audio_data, labels = data.read_music_files()
-    #audio_data = classifiers.data_normalize(audio_data)
-
-    validation_data, validation_mapping = data.read_validation_files()
-    #validation_data = classifiers.data_normalize(validation_data)
+    audio_data = None
+    validation_data = None
+    labels = data.get_labels()
+    validation_mapping = data.get_mapping()
 
     runall = cli_args['all']
-    if runall or cli_args['fft']:
-        features = data.get_fft_features(audio_data, fft_file)
-        validation_features = data.get_fft_features(validation_data, fft_validation_file)
+    if runall:
+        features = ['fft', 'mfcc', 'dwt']
+        methods = ['lr', 'knn', 'svm', 'nn']
+    else:
+        features = cli_args['features']
+        methods = cli_args['methods']
 
-        if runall or cli_args['lr']:
-            classifier = classifiers.log_reg_train(features, labels)
-            classification = classifiers.log_reg_classify(
-                classifier,
-                validation_features)
-            data.save_classification(
-                classification,
-                "./fft_lr_classification.csv",
-                validation_mapping)
+    for feature in features:
+        feature_file = os.path.join(data_dir, "%s_features.npy" % feature)
+        feature_validation_file = os.path.join(data_dir, "%s_validation_features.npy" % feature)
 
-        if runall or cli_args['knn']:
-            classifier = classifiers.knn_train(features, labels)
-            classification = classifiers.knn_classify(
-                classifier,
-                validation_features)
-            data.save_classification(
-                classification,
-                "./fft_knn_classification.csv",
-                validation_mapping)
+        if not os.path.exists(feature_file):
+            if audio_data is None:
+                audio_data, labels = data.read_music_files(folder=cli_args['training_data'])
 
-        if runall or cli_args['svm']:
-            classifier = classifiers.svm_train(features, labels)
-            classification = classifiers.svm_classify(
-                classifier,
-                validation_features)
-            data.save_classification(
-                classification,
-                "./fft_svm_classification.csv",
-                validation_mapping)
+        if not os.path.exists(feature_validation_file):
+            if validation_data is None:
+                validation_data, validaion_mapping = data.read_validation_files(cli_args['validation_data'])
 
-    if runall or cli_args['mfcc']:
-        features = data.get_mfcc_features(audio_data, mfcc_file)
-        validation_features = data.get_mfcc_features(validation_data, mfcc_validation_file)
+        feature_data = data.get_features(feature, audio_data, feature_file)
+        feature_validation_data = data.get_features(feature, validation_data, feature_validation_file)
 
-        if runall or cli_args['lr']:
-            classifier = classifiers.log_reg_train(features, labels)
-            classification = classifiers.log_reg_classify(
-                classifier,
-                validation_features)
-            data.save_classification(
-                classification,
-                "./mfcc_lr_classification.csv",
-                validation_mapping)
-
-        if runall or cli_args['knn']:
-            classifier = classifiers.knn_train(features, labels)
-            classification = classifiers.knn_classify(
-                classifier,
-                validation_features)
-            data.save_classification(
-                classification,
-                "./mfcc_knn_classification.csv",
-                validation_mapping)
-
-        if runall or cli_args['svm']:
-            classifier = classifiers.svm_train(features, labels)
-            classification = classifiers.svm_classify(
-                classifier,
-                validation_features)
-            data.save_classification(
-                classification,
-                "./mfcc_svm_classification.csv",
-                validation_mapping)
-
-    if runall or cli_args['dwt']:
-        features = data.get_dwt_features(audio_data, dwt_file)
-        validation_features = data.get_dwt_features(validation_data, dwt_validation_file)
-
-        if runall or cli_args['lr']:
-            classifier = classifiers.log_reg_train(features, labels)
-            classification = classifiers.log_reg_classify(
-                classifier,
-                validation_features)
-            data.save_classification(
-                classification,
-                "./dwt_lr_classification.csv",
-                validation_mapping)
-
-        if runall or cli_args['knn']:
-            classifier = classifiers.knn_train(features, labels)
-            classification = classifiers.knn_classify(
-                classifier,
-                validation_features)
-            data.save_classification(
-                classification,
-                "./dwt_knn_classification.csv",
-                validation_mapping)
-
-        if runall or cli_args['svm']:
-            classifier = classifiers.svm_train(features, labels)
-            classification = classifiers.svm_classify(
-                classifier,
-                validation_features)
-            data.save_classification(
-                classification,
-                "./dwt_svm_classification.csv",
-                validation_mapping)
+        for method in methods:
+            classifier = classifiers.train_data(method, feature_data, labels)
+            classification = classifiers.classify_data(classifier, feature_validation_data)
+            classification_file = "%s_%s_classification.csv" % (feature, method)
+            data.save_classification(classification, classification_file, validation_mapping)
     return
 
 

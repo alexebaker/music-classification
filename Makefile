@@ -4,6 +4,7 @@ all: docs
 clean:
 	find . -name "*.pyc" -delete
 	find . -name "*.npy" -delete
+	find . -name "*.csv" -delete
 
 .PHONY: docs
 docs:

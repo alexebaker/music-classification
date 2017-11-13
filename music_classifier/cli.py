@@ -33,38 +33,20 @@ def parse_args():
         help='Path to the validation data folder.')
 
     parser.add_argument(
-        '--fft',
-        action='store_true',
-        help='Path to the validation data folder.')
+        '--features',
+        type=str,
+        nargs='+',
+        help='Feature extraction method to use. Can be multiple features at once. Features can be: fft, mfcc, or dwt.')
 
     parser.add_argument(
-        '--mfcc',
-        action='store_true',
-        help='Path to the validation data folder.')
-
-    parser.add_argument(
-        '--dwt',
-        action='store_true',
-        help='Path to the validation data folder.')
-
-    parser.add_argument(
-        '--lr',
-        action='store_true',
-        help='Path to the validation data folder.')
-
-    parser.add_argument(
-        '--knn',
-        action='store_true',
-        help='Path to the validation data folder.')
-
-    parser.add_argument(
-        '--svm',
-        action='store_true',
-        help='Path to the validation data folder.')
+        '--methods',
+        type=str,
+        nargs='+',
+        help='Classification methods to use. Can be multiple methods at once. Methods can be: lr, knn, svm, or nn.')
 
     parser.add_argument(
         '--all',
         action='store_true',
-        help='Path to the validation data folder.')
+        help='Run all features and classifiers.')
 
     return vars(parser.parse_args())

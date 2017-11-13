@@ -29,7 +29,12 @@ def get_classifier(method):
     classifier = None
 
     if method == 'lr':
-        classifier = LogisticRegression(C=1000)
+        classifier = LogisticRegression(
+            random_state=42,
+            solver='newton-cg',
+            penalty='l2',
+            multi_class='multinomial',
+            C=10)
     elif method == 'knn':
         classifier = KNeighborsClassifier()
     elif method == 'svm':
@@ -47,14 +52,14 @@ def perform_cross_validation(method, data, target):
 
 
 def get_confusion_matrix(method, data, target):
-    training_data, testing_data, labels, _ = train_test_split(
+    training_data, testing_data, training_labels, testing_labels = train_test_split(
         data,
         target,
         test_size=0.1,
         train_size=0.9,
         random_state=42)
 
-    classifier = train_data(method, training_data, labels)
+    classifier = train_data(method, training_data, training_labels)
     classification = classify_data(classifier, testing_data)
-    confusion = confusion_matrix(target, classification)
+    confusion = confusion_matrix(testing_labels, classification)
     return confusion

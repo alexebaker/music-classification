@@ -42,7 +42,11 @@ def get_classifier(method):
             kernel='poly',
             C=0.1)
     elif method == 'nn':
-        classifier = MLPClassifier()
+        classifier = MLPClassifier(
+            solver = 'lbfgs',
+            alpha = .001,
+            activation = 'tanh'
+)
 
     return classifier
 

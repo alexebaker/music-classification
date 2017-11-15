@@ -49,6 +49,18 @@ genre_mapping = {
 
 def read_music_files(folder=genre_dir, data_file=audio_data_file, label_file=label_file):
     """Reads the music files.
+
+    :type folder: str
+    :param: path to the folder of music files
+
+    :type data_file: str
+    :param: path to a npy file of pre-processed audio data
+
+    :type label_file: str
+    :param: path to a npy file that has the labels of the data_file
+
+    :rtype: (np.array, np.array)
+    :returns: return np.array of audio_data and np.array of labels for the audio data
     """
     if os.path.exists(data_file) and os.path.exists(label_file):
         audio_data = np.load(data_file)
@@ -77,6 +89,14 @@ def read_music_files(folder=genre_dir, data_file=audio_data_file, label_file=lab
 
 
 def get_labels(label_file=label_file):
+    """Reads the label files.
+
+    :type label_file: str
+    :param: path to a npy file that has the labels of the data_file
+
+    :rtype: np.array
+    :returns: np.array of labels for the audio data (n_samples,)
+    """
     if os.path.exists(label_file):
         labels = np.load(label_file)
     else:
@@ -86,6 +106,18 @@ def get_labels(label_file=label_file):
 
 def read_validation_files(folder=validation_dir, data_file=validation_data_file, mapping_file=mapping_file):
     """Reads the validation music files.
+
+    :type folder: str
+    :param: path to the folder of validation music files
+
+    :type data_file: str
+    :param: path to a npy file of pre-processed validation data
+
+    :type mapping_file: str
+    :param: path to a json file that has a mapping of which filename is which row in the validation data.
+
+    :rtype: (np.array, dict)
+    :returns: return np.array of audio_data and dict of the mapping
     """
     if os.path.exists(data_file) and os.path.exists(mapping_file):
         validation_data = np.load(data_file)
@@ -114,6 +146,14 @@ def read_validation_files(folder=validation_dir, data_file=validation_data_file,
 
 
 def get_mapping(mapping_file=mapping_file):
+    """Reads the mapping json file.
+
+    :type mapping_file: str
+    :param: path to a json file that has a mapping of which filename is which row in the validation data.
+
+    :rtype: dict
+    :returns: dict of the mapping
+    """
     if os.path.exists(mapping_file):
         with open(mapping_file, 'r') as f:
             validation_mapping = json.load(f)
@@ -123,6 +163,20 @@ def get_mapping(mapping_file=mapping_file):
 
 
 def get_features(feature, audio_data, npy_file):
+    """Gets the array of features from the audio data.
+
+    :type feature: str
+    :param: name of the feature to use (fft, mfcc, dwt)
+
+    :type audio_data: np.array
+    :param: audio data to calculate the features for
+
+    :type npy_file: str
+    :param: path to a npy file that already has the computed features.
+
+    :rtype: np.array
+    :returns: np.array of calculated features (n_samples, n_features)
+    """
     features = None
     if feature == 'fft':
         features = get_fft_features(audio_data, npy_file)
@@ -134,7 +188,16 @@ def get_features(feature, audio_data, npy_file):
 
 
 def get_fft_features(audio_data, npy_file):
-    """Get the FFT features from the data set
+    """Calculates the features of the audio data.
+
+    :type audio_data: np.array
+    :param: audio data to calculate the features for
+
+    :type npy_file: str
+    :param: path to a npy file that already has the computed features.
+
+    :rtype: np.array
+    :returns: np.array of calculated features (n_samples, n_features)
     """
     start = feature_range[0] + 1
     end = feature_range[1] + 1
@@ -150,11 +213,21 @@ def get_fft_features(audio_data, npy_file):
             fft_features[row, 1:data_len] = np.abs(scipy.fftpack.fft(audio_data[row, 1:data_len]))
             fft_features[row, 0] = data_len
         np.save(npy_file, fft_features)
+    # return a subset of the fft features since there are so many.
     return normalize_data(fft_features[:, start:end:step])
 
 
 def get_mfcc_features(audio_data, npy_file):
-    """Get the MFCC features from the data set
+    """Calculates the features of the audio data.
+
+    :type audio_data: np.array
+    :param: audio data to calculate the features for
+
+    :type npy_file: str
+    :param: path to a npy file that already has the computed features.
+
+    :rtype: np.array
+    :returns: np.array of calculated features (n_samples, n_features)
     """
     if os.path.exists(npy_file):
         ceps_features = np.load(npy_file)
@@ -172,7 +245,16 @@ def get_mfcc_features(audio_data, npy_file):
 
 
 def get_dwt_features(audio_data, npy_file):
-    """Get dwt features from the data set
+    """Calculates the features of the audio data.
+
+    :type audio_data: np.array
+    :param: audio data to calculate the features for
+
+    :type npy_file: str
+    :param: path to a npy file that already has the computed features.
+
+    :rtype: np.array
+    :returns: np.array of calculated features (n_samples, n_features)
     """
     if os.path.exists(npy_file):
         dwt_features = np.load(npy_file)
@@ -189,6 +271,14 @@ def get_dwt_features(audio_data, npy_file):
 
 
 def normalize_data(data):
+    """Normalizes the given data.
+
+    :type data: np.array
+    :param: data to normalize (n_smaples, n_features)
+
+    :rtype: np.array
+    :returns: np.array of normalized data (n_samples, n_features)
+    """
     norm = Normalizer()
     return norm.fit_transform(data)
 

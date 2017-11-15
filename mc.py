@@ -25,6 +25,7 @@ def main():
     # Parse the command line arguments
     cli_args = cli.parse_args()
 
+    # initialize audio data
     audio_data = None
     validation_data = None
     labels = data.get_labels()
@@ -42,10 +43,12 @@ def main():
         feature_file = os.path.join(data_dir, "%s_features.npy" % feature)
         feature_validation_file = os.path.join(data_dir, "%s_validation_features.npy" % feature)
 
+        # only load audio data if needed to save memory
         if not os.path.exists(feature_file):
             if audio_data is None:
                 audio_data, labels = data.read_music_files(folder=cli_args['training_data'])
 
+        # only load validation data if needed to save memory
         if not os.path.exists(feature_validation_file):
             if validation_data is None:
                 validation_data, validaion_mapping = data.read_validation_files(cli_args['validation_data'])

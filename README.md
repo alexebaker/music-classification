@@ -53,7 +53,7 @@ Details about this project can be found on [Kaggle](https://inclass.kaggle.com/c
 
 ## Usage
 
-**NOTE**: This code will work in python 2. It worked for some versions of python 3, but failed for some. Please use python 2 if python 3 does not work for you.
+**NOTE**: This code will work in python 2. It may work in python 3, but it has not been tested. Please use python 2 if python 3 does not work for you.
 
 Make sure the virtualenv is active before you try running the python code. You can activate it by:
 
@@ -61,10 +61,64 @@ Make sure the virtualenv is active before you try running the python code. You c
 source .venv/bin/activate
 ```
 
-Once the virtualenv is activated, you can run the python script. The main entry point for this project is `nb.py`. Use the `-h` flag from any command to see help:
+Once the virtualenv is activated, you can run the python script. The main entry point for this project is `mc.py`. Use the `-h` flag from any command to see help:
 
 ```bash
->>>python nb.py -h
+>>>python mc.py -h
+usage: mc.py [-h] [--training-data TRAINING_DATA]
+             [--validation-data VALIDATION_DATA]
+             [--features FEATURES [FEATURES ...]]
+             [--methods METHODS [METHODS ...]] [--all] [--cross-validate]
+             [--confusion-matrix]
+
+Classifies the testing data using naive bayes and the training data.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --training-data TRAINING_DATA
+                        Path to the training data folder.
+  --validation-data VALIDATION_DATA
+                        Path to the validation data folder.
+  --features FEATURES [FEATURES ...]
+                        Feature extraction method to use. Can be multiple
+                        features at once. Features can be: fft, mfcc, or dwt.
+  --methods METHODS [METHODS ...]
+                        Classification methods to use. Can be multiple methods
+                        at once. Methods can be: lr, knn, svm, or nn.
+  --all                 Run all features and classifiers.
+  --cross-validate      Perform 10 fold cross validation.
+  --confusion-matrix    Calculate the confusion matrix for the given methods.
+```
+
+You must specify at least one feature and one method to run. You can specify multiple if you wish:
+
+```bash
+python mc.py --features fft mfcc --methods svm nn
+```
+
+If you want to run all features and methods, you can use the `--all` flag. **NOTE** This will take a long time to run:
+
+```bash
+python mc.py --all
+```
+
+To perform cross validation, add the `--cross-validate` flag:
+
+```bash
+python mc.py --features fft mfcc --methods svm nn --cross-validate
+```
+
+To generate a confusion matrix, add the `--confusion-matrix` flag:
+
+```bash
+python mc.py --features fft mfcc --methods svm nn --confusion-matrix
+```
+
+if your music data files are in a different directory than `./data/`, you can specify them with the `--training-data` and `--validation-data` flags:
+
+
+```bash
+python mc.py --training-data /path/to/training/data --validation-data /path/to/validation/data --features fft mfcc --methods svm nn
 ```
 
 
@@ -86,13 +140,13 @@ python open-docs.py
 
 ## TODO
 
-- [ ] - Parse FFT features
-- [ ] - Parse MFCC features
-- [ ] - Parse custom features
-- [ ] - Classify FFT features
-- [ ] - Classify MFCC features
-- [ ] - Classify custom features
-- [ ] - Write up final report
+- [x] - Parse FFT features
+- [x] - Parse MFCC features
+- [x] - Parse custom features
+- [x] - Classify FFT features
+- [x] - Classify MFCC features
+- [x] - Classify custom features
+- [x] - Write up final report
 
 
 ## Authors

@@ -137,6 +137,10 @@ Once the documentation is built, it can be viewed in your brower by running the 
 python open-docs.py
 ```
 
+## References
+
+This project uses the python [scikit-learn](http://scikit-learn.org/) package for implementing the machine learning algorithms.
+
 
 ## TODO
 

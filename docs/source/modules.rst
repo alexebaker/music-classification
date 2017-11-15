@@ -1,5 +1,5 @@
-naive_bayes
-===========
+music_classifier
+================
 
 .. toctree::
    :maxdepth: 4

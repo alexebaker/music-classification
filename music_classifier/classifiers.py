@@ -2,6 +2,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 
+import sys
+import itertools
+import numpy as np
+
 # for cross validation
 from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.metrics import confusion_matrix
@@ -11,6 +15,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
+
+from music_classifier.data import genre_mapping
 
 
 def train_data(method, data, target):
@@ -70,7 +76,7 @@ def get_classifier(method):
     elif method == 'svm':
         classifier = svm.SVC(
             kernel='poly',
-            C=1)
+            C=0.1)
     elif method == 'nn':
         classifier = MLPClassifier(
             solver='lbfgs',
@@ -102,17 +108,23 @@ def perform_cross_validation(method, data, target, folds=10):
     return accuracy['test_score']
 
 
-def get_confusion_matrix(method, data, target):
+def get_confusion_matrix(method, feature, data, target, plot=False):
     """Generates a confusion matrix for the given method and data.
 
     :type method: str
     :param method: Name of classifier to use (lr, svm, knn, nn)
+
+    :type feature: str
+    :param feature: name of the feature being used
 
     :type data: np.array
     :param data: input data array of (n_samples, n_features)
 
     :type target: np.array
     :param target: Labels for the data input (n_samples,)
+
+    :type plot: bool
+    :param plot: Whether or not to plot the confusion matrix graphically
 
     :rtype: np.array
     :retruns: array representing the confusion matrix (n_labels, n_labels)
@@ -126,5 +138,55 @@ def get_confusion_matrix(method, data, target):
 
     classifier = train_data(method, training_data, training_labels)
     classification = classify_data(classifier, testing_data)
-    confusion = confusion_matrix(testing_labels, classification)
-    return confusion
+    cm = confusion_matrix(testing_labels, classification)
+
+    if plot:
+        _plot_confusion_matrix(cm, feature, method)
+
+    return cm
+
+
+def _plot_confusion_matrix(cm, feature, method):
+    """This function plots the confusion matrix using matplotlib.
+
+    **NOTE** This code comes from http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
+
+    :type cm: np.array
+    :param cm: confusion matrix to plot
+
+    :type feature: str
+    :param feature: name of the feature that generated the matrix
+
+    :type method: str
+    :param method: name of the method that generated the matrix
+    """
+    try:
+        import matplotlib.pyplot as plt
+        plt.figure()
+        cmap = plt.cm.Blues
+    except ImportError:
+        print(sys.stderr, 'matplotlib is not installed, so plot could not be generated.')
+        return
+
+    title = "%s with %s Confusion Matrix" % (method.upper(), feature.upper())
+    classes = [genre for genre, _ in sorted(genre_mapping.items(), key=lambda x: x[1])]
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.savefig('%s_%s_cm_plot.png' % (feature, method))
+    return

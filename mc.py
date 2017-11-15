@@ -64,7 +64,7 @@ def main():
                 print(np.mean(accuracy))
                 print('')
             elif cli_args['confusion_matrix']:
-                confusion_matrix = classifiers.get_confusion_matrix(method, feature_data, labels)
+                confusion_matrix = classifiers.get_confusion_matrix(method, feature, feature_data, labels, plot=True)
                 print('Confusion matrix for %s %s:' % (feature, method))
                 print(confusion_matrix)
                 confusion_matrix_file = "%s_%s_confusion_matrix.npy" % (feature, method)
